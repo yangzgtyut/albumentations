@@ -26,8 +26,8 @@ class Params:
 @add_metaclass(ABCMeta)
 class DataProcessor:
     def __init__(self, params, additional_targets=None):
-        self.params = params
-        self.data_fields = [self.default_data_name]
+        self.params = params  # bbox_params"的一些参数
+        self.data_fields = [self.default_data_name]  # ["bboxes"]
         if additional_targets is not None:
             for k, v in additional_targets.items():
                 if v == self.default_data_name:
@@ -57,7 +57,7 @@ class DataProcessor:
     def preprocess(self, data):
         data = self.add_label_fields_to_data(data)
 
-        rows, cols = data["image"].shape[:2]
+        rows, cols = data["image"].shape[:2]  # h, w
         for data_name in self.data_fields:
             data[data_name] = self.check_and_convert(data[data_name], rows, cols, direction="to")
 
@@ -88,10 +88,13 @@ class DataProcessor:
         pass
 
     def add_label_fields_to_data(self, data):
+        '''
+        返回添加了"category_id"的data["bboxes"]
+        '''
         if self.params.label_fields is None:
             return data
-        for data_name in self.data_fields:
-            for field in self.params.label_fields:
+        for data_name in self.data_fields:  # self.data_fields: ["bboxes"]
+            for field in self.params.label_fields:  # ["category_id"]
                 assert len(data[data_name]) == len(data[field])
                 data_with_added_field = []
                 for d, field_value in zip(data[data_name], data[field]):
